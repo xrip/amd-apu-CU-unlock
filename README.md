@@ -3,6 +3,14 @@
 This repository contains an experimental Linux `amdgpu` patch for hidden
 compute units (CUs) on an AMD Raven Ridge APU.
 
+## Test platform
+
+- CPU: AMD Ryzen 3 2200G, 4 cores / 4 threads.
+- iGPU: AMD Raven Ridge Radeon Vega 8, 8 stock CUs.
+- Change tested: iGPU CUs 8 -> 11.
+
+This project unlocks GPU CUs. It does not unlock CPU cores.
+
 ## Result at a glance
 
 The tested Raven Ridge Vega 8 went from 8 to 11 active CUs. Scalar FP32

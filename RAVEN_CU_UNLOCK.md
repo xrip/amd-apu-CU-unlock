@@ -6,6 +6,7 @@ Host: `192.168.1.221`
 
 ## Hardware
 
+- CPU: AMD Ryzen 3 2200G, 4 cores / 4 threads
 - GPU: AMD Raven Ridge / Radeon Vega Series
 - PCI ID: `1002:15dd`
 - Board subsystem: `1458:d000`
@@ -15,6 +16,9 @@ Host: `192.168.1.221`
 - VRAM: 256 MiB
 - Kernel: `6.8.0-137-generic`
 - Mesa/Rusticl: `25.2.8-0ubuntu0.24.04.2`
+
+This experiment changed the integrated GPU from 8 to 11 active CUs. The CPU
+stayed at 4 cores and 4 threads; no CPU core unlock was tested here.
 
 ## Attribution
 
