@@ -1,0 +1,21 @@
+[Defines]
+  INF_VERSION                    = 0x0001001B
+  BASE_NAME                      = RavenCuTest
+  FILE_GUID                      = 5E764F1A-0C9E-4F4E-9E5A-0A5F8D5B2E71
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 0.1
+  ENTRY_POINT                    = UefiMain
+
+[Sources]
+  RavenCuTest.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  MemoryAllocationLib
+  UefiApplicationEntryPoint
+  UefiBootServicesTableLib
+  UefiLib

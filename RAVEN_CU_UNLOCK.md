@@ -209,6 +209,59 @@ INACTIVE_CUS shift = 0x10
 
 The Raven driver limits the usable CU bitmap to 11 bits. The safe target range is therefore 8 through 11 total CUs. Bits 11 through 15 are outside the Raven CU layout and must not be treated as extra CUs.
 
+## UEFI Shell test path
+
+The repository now has a small UEFI Shell app in
+[`uefi/README.md`](uefi/README.md). This is the first test step for a future
+DXE path. It is not a BIOS image, it does not flash the BIOS, and it does not
+insert a DXE module.
+
+The app accepts only the tested Raven device and board:
+
+```text
+PCI device  1002:15dd
+Subsystem   1458:d000
+BAR         0
+```
+
+For this Raven layout, the Linux register path gives:
+
+```text
+GC base                         0x2000 dwords
+CC_GC_SHADER_ARRAY_CONFIG      0x026f dwords
+BAR0 byte offset                0x89bc
+INACTIVE_CUS field              bits 16-31
+```
+
+The first command is read-only:
+
+```text
+RavenCuTest.efi
+```
+
+If the read works, one write test may be made per boot:
+
+```text
+RavenCuTest.efi --count 9 --write --confirm
+RavenCuTest.efi --count 10 --write --confirm
+RavenCuTest.efi --count 11 --write --confirm
+```
+
+The write is a read-modify-write. It clears only field bits 8-10 for the
+requested count and keeps all other register bits unchanged. The app reads
+the register again after the write. A failed read means that write mode must
+not be used.
+
+The write only changes live GPU state. It does not prove that Linux or Windows
+will keep the value. After each reboot, check the reported CU count and run a
+short GPU test. If the OS driver restores 8 CUs, the next step is a driver or
+DXE study; the UEFI Shell write alone is not enough.
+
+The package has an EDK II project file and a PowerShell build wrapper. The
+current package is an application on purpose: it gives a read-only check and a
+small write test before any BIOS change. Only after this path is proven should
+the same guarded code be considered for a DXE driver.
+
 ## Failed or unsafe tests
 
 - A patch that wrote zero to the whole inactive-CU field reported 11 CUs, but `gfx_low` and `gfx_high` IB tests timed out with `-110`.

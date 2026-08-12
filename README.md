@@ -276,11 +276,31 @@ CUs, but `gfx_low` and `gfx_high` IB tests timed out with `-110`, and
 OpenCL then rejected GPU commands. That patch is not a valid unlock and must
 not be used as a performance result.
 
+## UEFI test package
+
+The [`uefi/`](uefi/) folder contains a read-only-first UEFI Shell app. It
+checks the exact Raven PCI and subsystem IDs, reads the target register, and
+has an explicit write form for CU 9, 10, or 11. It does not flash the BIOS and
+does not insert a DXE module.
+
+Read [`uefi/README.md`](uefi/README.md) before use. The first test must be:
+
+```text
+RavenCuTest.efi
+```
+
+The write form needs both `--write` and `--confirm`:
+
+```text
+RavenCuTest.efi --count 9 --write --confirm
+```
+
 ## Related files
 
 - [`RAVEN_CU_UNLOCK.md`](RAVEN_CU_UNLOCK.md) — measured results and kernel evidence.
 - [`AMD_IGPU_CU_UNLOCK_METHOD.md`](AMD_IGPU_CU_UNLOCK_METHOD.md) — general investigation and validation method.
 - [`raven-gfx9-cu-unlock.patch`](raven-gfx9-cu-unlock.patch) — canonical 9-11 CU patch.
+- [`uefi/README.md`](uefi/README.md) — UEFI Shell test package.
 - [`REDDIT_POST_TEMPLATE.md`](REDDIT_POST_TEMPLATE.md) — local, ignored post template.
 
 ## License
