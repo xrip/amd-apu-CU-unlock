@@ -13,6 +13,10 @@
   MdePkg/MdePkg.dec
   ShellPkg/ShellPkg.dec
 
+[Protocols]
+  gEfiPciIoProtocolGuid
+  gEfiShellParametersProtocolGuid
+
 [LibraryClasses]
   BaseLib
   MemoryAllocationLib
