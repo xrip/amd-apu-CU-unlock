@@ -26,15 +26,18 @@ here were derived separately for this GPU.
 
 ## Performance summary
 
-Values below are from `clpeak` at 1100 MHz. The `float16` column is the
-widest single-precision FP32 vector test, not half-precision arithmetic.
+Values below are from `clpeak` at 1100 MHz. Gain uses 1035 GFLOPS, the middle
+of the 8-CU stock range of 1030-1040 GFLOPS.
 
-| Total CUs | Test mode | Unlock mask | FP32 `float` (GFLOPS) | FP32 `float16` (GFLOPS) | Result |
-|---:|---|---|---:|---:|---|
-| 8 | Stock driver | None | 1030-1040 | Not recorded | Baseline |
-| 9 | Selective module, `raven_cu_unlock_cu=10` | One of bits 8-10 | 1121.60 | 1133.48 | Valid |
-| 10 | Count module, `raven_cu_count=10` | `0x300` | 1268.09 | 1281.69 | Valid |
-| 11 | Count module, `raven_cu_count=11` | `0x700` | 1325.36 | 1408.42 | Valid; full run completed |
+| Active CUs | CU change | Test mode | Unlock mask | FP32 `float` | Gain vs stock | Result |
+|---:|---:|---|---|---:|---:|---|
+| 8 | — | Stock driver | None | 1030-1040 GFLOPS | Baseline | Stock |
+| 9 | +1 | Selective module | One bit, 8-10 | 1121.60 GFLOPS | +8.4% | Valid |
+| 10 | +2 | `raven_cu_count=10` | `0x300` | 1268.09 GFLOPS | +22.5% | Valid |
+| 11 | +3 | `raven_cu_count=11` | `0x700` | 1325.36 GFLOPS | +28.1% | Valid; full run |
+
+The `float16` values below are the 16-wide FP32 vector case. They do not mean
+FP16 arithmetic.
 
 The 10-CU run recorded the FP32 section only. The 11-CU run completed the
 full AMD `clpeak` test and its other values are listed below.

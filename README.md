@@ -3,6 +3,22 @@
 This repository contains an experimental Linux `amdgpu` patch for hidden
 compute units (CUs) on an AMD Raven Ridge APU.
 
+## Result at a glance
+
+The tested Raven Ridge Vega 8 went from 8 to 11 active CUs. Scalar FP32
+performance rose from about 1035 to 1325.36 GFLOPS.
+
+| Active CUs | CU change | FP32 `float` | Gain vs stock | Test |
+|---:|---:|---:|---:|---|
+| 8 | — | 1030-1040 GFLOPS | Baseline | Stock driver |
+| 9 | +1 | 1121.60 GFLOPS | +8.4% | Passed |
+| 10 | +2 | 1268.09 GFLOPS | +22.5% | Passed |
+| 11 | +3 | 1325.36 GFLOPS | +28.1% | Passed full `clpeak` |
+
+The gain uses 1035 GFLOPS, the middle of the 8-CU stock range. All tests used
+1100 MHz and AMD Rusticl. The full data is in
+[`RAVEN_CU_UNLOCK.md`](RAVEN_CU_UNLOCK.md).
+
 ## Attribution
 
 The idea and general methodology for CU unlocking were taken from
@@ -34,20 +50,9 @@ or recovery access.
 
 ### Tested result
 
-The measured values below are from AMD `clpeak` at 1100 MHz:
-
-| Total CUs | Module option | Mask | FP32 `float` | FP32 `float16` | Status |
-|---:|---|---:|---:|---:|---|
-| 8 | No option | None | 1030-1040 GFLOPS | Not recorded | Stock baseline |
-| 9 | `raven_cu_unlock_cu=10` | One bit, 8-10 | 1121.60 GFLOPS | 1133.48 GFLOPS | Valid selective test |
-| 10 | `raven_cu_count=10` | `0x300` | 1268.09 GFLOPS | 1281.69 GFLOPS | Valid boot test |
-| 11 | `raven_cu_count=11` | `0x700` | 1325.36 GFLOPS | 1408.42 GFLOPS | Valid full `clpeak` run |
-
-`float16` here means the 16-wide FP32 vector case in the clpeak
-single-precision section. It does not mean FP16 arithmetic.
-
-The complete measurements and the full 11-CU output are in
-[`RAVEN_CU_UNLOCK.md`](RAVEN_CU_UNLOCK.md).
+The measured values and the full 11-CU output are in
+[`RAVEN_CU_UNLOCK.md`](RAVEN_CU_UNLOCK.md). The detailed table at the top of
+this README uses scalar FP32 `float` for a simple CU-to-speed comparison.
 
 The reusable investigation workflow is documented in
 [`AMD_IGPU_CU_UNLOCK_METHOD.md`](AMD_IGPU_CU_UNLOCK_METHOD.md). It explains
