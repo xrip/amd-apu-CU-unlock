@@ -1,0 +1,30 @@
+diff --git a/drivers/gpu/drm/amd/amdgpu/gfx_v9_0.c b/drivers/gpu/drm/amd/amdgpu/gfx_v9_0.c
+--- a/drivers/gpu/drm/amd/amdgpu/gfx_v9_0.c
++++ b/drivers/gpu/drm/amd/amdgpu/gfx_v9_0.c
+@@ -64,0 +65,8 @@
++#define RAVEN_CU_UNLOCK_DEVICE_ID             0x15dd
++#define RAVEN_CU_UNLOCK_SUBSYSTEM_VENDOR     0x1458
++#define RAVEN_CU_UNLOCK_SUBSYSTEM_DEVICE     0xd000
++
++static int raven_cu_count = 8;
++module_param_named(raven_cu_count, raven_cu_count, int, 0444);
++MODULE_PARM_DESC(raven_cu_count,
++	"Total Raven CU count to test (8-11)");
+@@ -7251 +7259 @@
+-	u32 mask, bitmap, ao_bitmap, ao_cu_mask = 0;
++	u32 mask, bitmap, ao_bitmap, ao_cu_mask = 0, cc_config, unlock_mask;
+@@ -7276,2 +7284,14 @@
+ 				adev, disable_masks[i * adev->gfx.config.max_sh_per_se + j]);
++			if (raven_cu_count > 8 && raven_cu_count <= 11 &&
++				adev->pdev->device == RAVEN_CU_UNLOCK_DEVICE_ID &&
++				adev->pdev->subsystem_vendor == RAVEN_CU_UNLOCK_SUBSYSTEM_VENDOR &&
++				adev->pdev->subsystem_device == RAVEN_CU_UNLOCK_SUBSYSTEM_DEVICE) {
++				unlock_mask = GENMASK(raven_cu_count - 1, 8);
++				cc_config = RREG32_SOC15(GC, 0, mmCC_GC_SHADER_ARRAY_CONFIG);
++				cc_config &= ~(unlock_mask <<
++					CC_GC_SHADER_ARRAY_CONFIG__INACTIVE_CUS__SHIFT);
++				WREG32_SOC15(GC, 0, mmCC_GC_SHADER_ARRAY_CONFIG, cc_config);
++				dev_info(adev->dev, "Raven CU test: count %d, mask 0x%x\n",
++					 raven_cu_count, unlock_mask);
++			}
+ 			bitmap = gfx_v9_0_get_cu_active_bitmap(adev);
