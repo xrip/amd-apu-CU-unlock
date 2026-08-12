@@ -42,10 +42,36 @@ Set-ExecutionPolicy -Scope Process Bypass
 The app is written for X64. Copy this file to a FAT32 UEFI Shell disk:
 
 ```text
-Build\RavenCuTest\RELEASE_X64\RavenCuTest.efi
+Build\RavenCuTest\RELEASE_<TOOLCHAIN>\X64\RavenCuTest.efi
 ```
 
+The exact path is also printed by the build script.
+
 The build script is a small wrapper around the normal EDK II `build` command.
+
+## GitHub Actions and releases
+
+The workflow at
+`.github/workflows/uefi-release.yml` builds the app on pull requests, tag
+pushes, and manual runs. It uses the pinned `edk2-stable202605` tree.
+
+Create a release with a version tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+For a `v*` tag, the workflow makes a GitHub Release with:
+
+- `RavenCuTest-uefi.img` — a 64 MiB FAT32 image.
+- `RavenCuTest-package.zip` — the EFI file, source, script, and README.
+
+The FAT image is a data image for a UEFI Shell. It is not a full firmware
+image, does not contain a UEFI Shell binary, and is not a BIOS update.
+
+Pull requests and manual runs only make an Actions artifact. They do not make
+a release.
 
 ## Read-only test
 

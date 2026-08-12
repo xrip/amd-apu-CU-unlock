@@ -15,6 +15,12 @@ try {
         . .\edksetup.ps1
     }
 
+    # Keep this repository as the EDK II workspace. EDK II packages stay in
+    # the separate EDK2 tree.
+    $env:WORKSPACE = $RepoRoot
+    $env:PACKAGES_PATH = $Edk2Root
+    $env:CONF_PATH = Join-Path $Edk2Root 'Conf'
+
     if (-not (Get-Command build -ErrorAction SilentlyContinue)) {
         throw 'EDK II build command was not found. Run edksetup.ps1 first.'
     }
@@ -29,8 +35,19 @@ try {
         exit $LASTEXITCODE
     }
 
+    $Efi = Get-ChildItem `
+        -Path (Join-Path $RepoRoot 'Build') `
+        -Filter 'RavenCuTest.efi' `
+        -File `
+        -Recurse `
+        -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if ($null -eq $Efi) {
+        throw 'RavenCuTest.efi was not found in the build output.'
+    }
+
     Write-Host 'Build complete.'
-    Write-Host (Join-Path $Edk2Root 'Build\RavenCuTest\RELEASE_X64\RavenCuTest.efi')
+    Write-Host $Efi.FullName
 }
 finally {
     Pop-Location

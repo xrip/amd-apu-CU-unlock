@@ -1,0 +1,105 @@
+name: UEFI build and release
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/uefi-release.yml'
+      - 'uefi/**'
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Get project
+        uses: actions/checkout@v4
+
+      - name: Get Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Get build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y acpica-tools dosfstools mtools nasm uuid-dev zip
+
+      - name: Get EDK II
+        uses: actions/checkout@v4
+        with:
+          repository: tianocore/edk2
+          ref: edk2-stable202605
+          path: edk2
+          submodules: true
+
+      - name: Build and make UEFI image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          make -C edk2/BaseTools
+          pushd edk2
+          source edksetup.sh
+          popd
+
+          export WORKSPACE="$GITHUB_WORKSPACE"
+          export PACKAGES_PATH="$GITHUB_WORKSPACE/edk2"
+          export CONF_PATH="$GITHUB_WORKSPACE/edk2/Conf"
+
+          build \
+            -p "$GITHUB_WORKSPACE/uefi/RavenCuTest.dsc" \
+            -a X64 \
+            -t GCC5 \
+            -b RELEASE
+
+          EFI_PATH="$(find "$WORKSPACE/Build" -type f -name RavenCuTest.efi -print -quit)"
+          test -n "$EFI_PATH"
+
+          mkdir -p dist/package
+          cp "$EFI_PATH" dist/package/RavenCuTest.efi
+          cp uefi/raven-cu-readonly.nsh dist/package/
+          cp uefi/README.md dist/package/README.md
+          cp uefi/RavenCuTest/RavenCuTest.c dist/package/
+          cp uefi/RavenCuTest/RavenCuTest.inf dist/package/
+          cp uefi/RavenCuTest.dsc dist/package/
+
+          IMAGE="dist/RavenCuTest-uefi.img"
+          dd if=/dev/zero of="$IMAGE" bs=1M count=64 status=none
+          mkfs.fat -F 32 "$IMAGE" >/dev/null
+          mmd -i "$IMAGE" ::/EFI
+          mmd -i "$IMAGE" ::/EFI/BOOT
+          mcopy -i "$IMAGE" dist/package/RavenCuTest.efi ::/RavenCuTest.efi
+          mcopy -i "$IMAGE" dist/package/raven-cu-readonly.nsh ::/raven-cu-readonly.nsh
+          mcopy -i "$IMAGE" dist/package/RavenCuTest.efi ::/EFI/BOOT/RavenCuTest.efi
+          mcopy -i "$IMAGE" dist/package/raven-cu-readonly.nsh ::/EFI/BOOT/raven-cu-readonly.nsh
+
+          (
+            cd dist/package
+            zip -9 -r ../RavenCuTest-package.zip .
+          )
+          rm -rf dist/package
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RavenCuTest-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/RavenCuTest-uefi.img \
+            dist/RavenCuTest-package.zip \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes
