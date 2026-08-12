@@ -45,13 +45,15 @@ jobs:
           set -euo pipefail
 
           make -C edk2/BaseTools
-          pushd edk2
-          source edksetup.sh
-          popd
-
           export WORKSPACE="$GITHUB_WORKSPACE"
           export PACKAGES_PATH="$GITHUB_WORKSPACE/edk2"
           export CONF_PATH="$GITHUB_WORKSPACE/edk2/Conf"
+          export EDK_TOOLS_PATH="$GITHUB_WORKSPACE/edk2/BaseTools"
+          export PYTHON_COMMAND=python3
+
+          pushd edk2
+          source edksetup.sh
+          popd
 
           build \
             -p "$GITHUB_WORKSPACE/uefi/RavenCuTest.dsc" \
