@@ -53,7 +53,8 @@ The build script is a small wrapper around the normal EDK II `build` command.
 
 The workflow at
 `.github/workflows/uefi-release.yml` builds the app on pull requests, tag
-pushes, and manual runs. It uses the pinned `edk2-stable202605` tree.
+pushes, and manual runs. It uses the pinned `edk2-stable202605` tree and its
+modern `GCC` toolchain name.
 
 Create a release with a version tag:
 
